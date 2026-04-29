@@ -1,0 +1,13 @@
+Date,Product,Sales,Units,Region
+2026-01-01,Widget A,500,25,North
+2026-01-02,Widget B,750,30,South
+2026-01-03,Gadget X,300,10,East
+2026-01-04,Gadget Y,900,45,West
+2026-01-05,Widget A,450,22,North
+2026-01-06,Widget B,800,32,South
+2026-01-07,Gadget X,350,12,East
+2026-01-08,Gadget Y,850,42,West
+2026-01-09,Widget A,520,26,North
+2026-01-10,Widget B,720,28,South
+2026-01-11,Gadget X,310,11,East
+2026-01-12,Gadget Y,920,46,West
