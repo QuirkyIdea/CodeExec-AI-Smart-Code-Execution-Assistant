@@ -211,7 +211,7 @@ def execute_python_code(code: str, timeout: int = 30) -> dict:
         return {
             "success": result.returncode == 0,
             "output": result.stdout,
-            "error": result.stderr,
+            "error": result.stderr if result.returncode != 0 else "",
             "plots": plots,
             "output_files": output_files,
             "execution_time_ms": elapsed_ms

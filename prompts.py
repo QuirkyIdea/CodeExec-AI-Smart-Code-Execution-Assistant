@@ -209,6 +209,7 @@ PLOT_CAPTURE_PREAMBLE = '''
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+plt.show = lambda *args, **kwargs: None  # Suppress FigureCanvasAgg warning
 import io, base64, json, atexit, os
 
 _codeexec_plots = []
