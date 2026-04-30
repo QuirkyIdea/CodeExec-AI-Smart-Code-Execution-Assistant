@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeExec AI — Dashboard</title>
+    <meta name="description" content="CodeExec AI Dashboard — Your AI-powered code execution command center.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/home.css">
+</head>
+<body>
+    <div class="home-bg">
+        <img src="/static/bg.png" alt="" class="home-bg-img" />
+        <div class="home-bg-overlay"></div>
+        <div class="grain-overlay"></div>
+    </div>
+
+    <div class="home-container">
+        <!-- Top Nav Bar -->
+        <nav class="home-nav">
+            <div class="nav-left">
+                <div class="nav-logo">
+                    <div class="nav-logo-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                    </div>
+                    <span class="nav-logo-text">CodeExec AI</span>
+                </div>
+            </div>
+            <div class="nav-center">
+                <div class="nav-status">
+                    <span class="status-dot-live"></span>
+                    <span>All Systems Operational</span>
+                </div>
+            </div>
+            <div class="nav-right">
+                <span class="nav-user" id="navUser">Guest</span>
+                <button class="nav-logout" id="logoutBtn" title="Sign out">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                </button>
+            </div>
+        </nav>
+
+        <!-- System stats bar -->
+        <div class="sys-bar">
+            <div class="sys-item">
+                <span class="sys-label">ENGINE</span>
+                <span class="sys-val">FastAPI</span>
+            </div>
+            <div class="sys-item">
+                <span class="sys-label">AI MODEL</span>
+                <span class="sys-val">Qwen 2.5 Coder</span>
+            </div>
+            <div class="sys-item">
+                <span class="sys-label">SANDBOX</span>
+                <span class="sys-val accent">● Active</span>
+            </div>
+            <div class="sys-item">
+                <span class="sys-label">MCP</span>
+                <span class="sys-val accent">● Connected</span>
+            </div>
+            <div class="sys-item">
+                <span class="sys-label">DATABASE</span>
+                <span class="sys-val">Supabase</span>
+            </div>
+        </div>
+
+        <!-- Dashboard Grid -->
+        <div class="dash-grid">
+            <!-- Primary CTA Card -->
+            <div class="dash-card card-cta" id="cardLaunchEditor">
+                <div class="card-glow"></div>
+                <div class="card-icon cta-icon">
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                </div>
+                <h2>Code Editor</h2>
+                <p>Write & execute Python with Monaco Editor, auto-imports, and instant output rendering.</p>
+                <span class="card-action">Launch Editor →</span>
+            </div>
+
+            <!-- AI Prompt Card -->
+            <div class="dash-card card-ai" id="cardAiPrompt">
+                <div class="card-icon ai-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+                </div>
+                <h3>AI Prompt Mode</h3>
+                <p>Describe what you want in plain English — the AI writes and runs the code for you.</p>
+                <span class="card-action">Open AI Mode →</span>
+            </div>
+
+            <!-- Feature cards row -->
+            <div class="dash-card card-feat" id="cardSandbox">
+                <div class="feat-header">
+                    <span class="feat-emoji">🔐</span>
+                    <h4>Secure Sandbox</h4>
+                </div>
+                <p>AST-based code scanning blocks dangerous imports & built-ins before execution.</p>
+                <div class="feat-stats">
+                    <div><strong>5s</strong><span>Timeout</span></div>
+                    <div><strong>8</strong><span>Blocked Modules</span></div>
+                </div>
+            </div>
+
+            <div class="dash-card card-feat" id="cardViz">
+                <div class="feat-header">
+                    <span class="feat-emoji">📊</span>
+                    <h4>Visualization Engine</h4>
+                </div>
+                <p>Matplotlib charts are captured as Base64 PNGs and rendered inline in the browser.</p>
+                <div class="feat-stats">
+                    <div><strong>120</strong><span>DPI</span></div>
+                    <div><strong>PNG</strong><span>Format</span></div>
+                </div>
+            </div>
+
+            <div class="dash-card card-feat" id="cardRecovery">
+                <div class="feat-header">
+                    <span class="feat-emoji">🔁</span>
+                    <h4>Auto Recovery</h4>
+                </div>
+                <p>If code crashes, the AI silently fixes it and re-runs — you only see working results.</p>
+                <div class="feat-stats">
+                    <div><strong>Auto</strong><span>Fix</span></div>
+                    <div><strong>1</strong><span>Retry</span></div>
+                </div>
+            </div>
+
+            <div class="dash-card card-feat" id="cardData">
+                <div class="feat-header">
+                    <span class="feat-emoji">🗃️</span>
+                    <h4>Dataset Manager</h4>
+                </div>
+                <p>Upload CSV, Excel, or JSON files to Supabase. The AI reads schemas for smart analysis.</p>
+                <div class="feat-stats">
+                    <div><strong>4</strong><span>Formats</span></div>
+                    <div><strong>Cloud</strong><span>Storage</span></div>
+                </div>
+            </div>
+
+            <!-- Bottom wide cards -->
+            <div class="dash-card card-wide" id="cardSession">
+                <div class="wide-left">
+                    <span class="feat-emoji">🧠</span>
+                    <div>
+                        <h4>Session Memory</h4>
+                        <p>Remembers your last 4 interactions for contextual follow-ups.</p>
+                    </div>
+                </div>
+                <div class="feat-stats">
+                    <div><strong>4</strong><span>History</span></div>
+                    <div><strong>UUID</strong><span>Session</span></div>
+                </div>
+            </div>
+
+            <div class="dash-card card-wide" id="cardMcp">
+                <div class="wide-left">
+                    <span class="feat-emoji">🧩</span>
+                    <div>
+                        <h4>MCP Protocol</h4>
+                        <p>Exposes <code>run_python_code</code> tool for any MCP-compatible LLM client.</p>
+                    </div>
+                </div>
+                <div class="feat-stats">
+                    <div><strong>SSE</strong><span>Transport</span></div>
+                    <div><strong>1</strong><span>Tool</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    (function() {
+        const user = JSON.parse(localStorage.getItem('codeexec_user') || 'null');
+        if (!user) { window.location.href = '/auth'; return; }
+        document.getElementById('navUser').textContent = user.name || user.email || 'User';
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            localStorage.removeItem('codeexec_user');
+            window.location.href = '/auth';
+        });
+        // Navigation
+        document.getElementById('cardLaunchEditor').addEventListener('click', () => window.location.href = '/app');
+        document.getElementById('cardAiPrompt').addEventListener('click', () => window.location.href = '/app?mode=prompt');
+    })();
+    </script>
+</body>
+</html>

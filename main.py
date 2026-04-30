@@ -64,10 +64,57 @@ os.makedirs(STATIC_DIR, exist_ok=True)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
-# --- Web UI ---
+# --- Page Routes ---
 @app.get("/")
-async def serve_ui():
+async def root_redirect():
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="/home")
+
+@app.get("/auth")
+async def serve_auth():
+    return FileResponse(os.path.join(STATIC_DIR, "auth.html"))
+
+@app.get("/home")
+async def serve_home():
+    return FileResponse(os.path.join(STATIC_DIR, "home.html"))
+
+@app.get("/app")
+async def serve_app():
     return FileResponse(os.path.join(STATIC_DIR, "index.html"))
+
+
+# --- Simple Auth API (in-memory) ---
+import hashlib
+user_store: Dict[str, dict] = {}  # email -> {name, email, password_hash}
+
+class AuthRequest(BaseModel):
+    email: str
+    password: str
+    name: Optional[str] = None
+
+@app.post("/api/auth/signup")
+async def auth_signup(req: AuthRequest):
+    if not req.name or not req.email or not req.password:
+        return JSONResponse(status_code=400, content={"success": False, "error": "All fields are required."})
+    if req.email in user_store:
+        return JSONResponse(status_code=400, content={"success": False, "error": "Email already registered."})
+    if len(req.password) < 6:
+        return JSONResponse(status_code=400, content={"success": False, "error": "Password must be at least 6 characters."})
+    pw_hash = hashlib.sha256(req.password.encode()).hexdigest()
+    user_store[req.email] = {"name": req.name, "email": req.email, "password_hash": pw_hash}
+    return {"success": True, "user": {"name": req.name, "email": req.email}}
+
+@app.post("/api/auth/login")
+async def auth_login(req: AuthRequest):
+    if not req.email or not req.password:
+        return JSONResponse(status_code=400, content={"success": False, "error": "Email and password are required."})
+    user = user_store.get(req.email)
+    if not user:
+        return JSONResponse(status_code=401, content={"success": False, "error": "No account found with this email."})
+    pw_hash = hashlib.sha256(req.password.encode()).hexdigest()
+    if user["password_hash"] != pw_hash:
+        return JSONResponse(status_code=401, content={"success": False, "error": "Invalid password."})
+    return {"success": True, "user": {"name": user["name"], "email": user["email"]}}
 
 
 # --- REST API ---
@@ -421,4 +468,4 @@ async def mcp_messages_endpoint(request: Request):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
