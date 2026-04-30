@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+    <!-- Monaco Editor (VS Code engine) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -144,8 +146,8 @@
                         </div>
                     </div>
                     <div class="editor-container">
-                        <div class="line-numbers" id="lineNumbers"></div>
-                        <textarea id="codeEditor" spellcheck="false" placeholder="# Write your Python code here...&#10;# Try: print('Hello, World!')&#10;# Or click an example from the sidebar →"></textarea>
+                        <!-- Monaco Editor mount point -->
+                        <div id="monacoEditor"></div>
                     </div>
                     <div class="editor-footer">
                         <div class="editor-info">

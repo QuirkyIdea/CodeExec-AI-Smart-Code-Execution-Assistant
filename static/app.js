@@ -6,8 +6,9 @@
     "use strict";
 
     // --- DOM References ---
-    const codeEditor = document.getElementById("codeEditor");
-    const lineNumbers = document.getElementById("lineNumbers");
+    // NOTE: codeEditor textarea is no longer in the DOM.
+    // All code reads/writes go through editorAPI (Monaco abstraction).
+    const lineNumbers = document.getElementById("lineNumbers"); // hidden, kept for safety
     const runBtn = document.getElementById("runBtn");
     const clearBtn = document.getElementById("clearBtn");
     const copyCodeBtn = document.getElementById("copyCodeBtn");
@@ -27,6 +28,14 @@
     const statRuns = document.getElementById("statRuns");
     const statSuccess = document.getElementById("statSuccess");
     const statAvgMs = document.getElementById("statAvgMs");
+
+    // Monaco editor instance and abstraction API
+    let monacoInstance = null;
+    const editorAPI = {
+        getValue: () => monacoInstance ? monacoInstance.getValue() : "",
+        setValue: (code) => { if (monacoInstance) { monacoInstance.setValue(code); updateEditorInfo(); } },
+        focus:    () => { if (monacoInstance) monacoInstance.focus(); }
+    };
 
     // Mode tabs
     const modeEditor = document.getElementById("modeEditor");
@@ -104,16 +113,99 @@
     function init() {
         loadExamples();
         loadDatasets();
-        updateLineNumbers();
         bindEvents();
-        codeEditor.focus();
+        initMonaco();
+    }
+
+    // --- Monaco Editor Initialization ---
+    function initMonaco() {
+        require.config({
+            paths: { vs: "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs" }
+        });
+
+        require(["vs/editor/editor.main"], function () {
+            // Define a custom warm amber dark theme matching the app's palette
+            monaco.editor.defineTheme("codeexec-dark", {
+                base: "vs-dark",
+                inherit: true,
+                rules: [
+                    { token: "comment",        foreground: "5a5a6a", fontStyle: "italic" },
+                    { token: "keyword",        foreground: "f59e0b", fontStyle: "bold" },
+                    { token: "string",         foreground: "22c55e" },
+                    { token: "number",         foreground: "06b6d4" },
+                    { token: "type",           foreground: "ef4444" },
+                    { token: "delimiter",      foreground: "a1a1aa" },
+                    { token: "identifier",     foreground: "f4f4f5" },
+                    { token: "function",       foreground: "fbbf24" },
+                ],
+                colors: {
+                    "editor.background":           "#18181b",
+                    "editor.foreground":           "#f4f4f5",
+                    "editorLineNumber.foreground": "#52525b",
+                    "editorLineNumber.activeForeground": "#f59e0b",
+                    "editor.lineHighlightBackground":    "#1e1e2260",
+                    "editorCursor.foreground":     "#f59e0b",
+                    "editor.selectionBackground":  "#f59e0b40",
+                    "editorIndentGuide.background":"#27272b",
+                    "editorIndentGuide.activeBackground": "#f59e0b50",
+                    "editorWidget.background":     "#1e1e22",
+                    "editorWidget.border":         "#3f3f46",
+                    "editorSuggestWidget.background": "#1e1e22",
+                    "editorSuggestWidget.border":  "#3f3f46",
+                    "editorSuggestWidget.selectedBackground": "#f59e0b25",
+                    "scrollbarSlider.background":  "#3f3f4680",
+                    "scrollbarSlider.hoverBackground": "#52525b",
+                }
+            });
+
+            monacoInstance = monaco.editor.create(document.getElementById("monacoEditor"), {
+                value: "# Write your Python code here...\n# Try: print('Hello, World!')\n# Or click an example from the sidebar →\n",
+                language: "python",
+                theme: "codeexec-dark",
+                fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+                fontSize: 13,
+                lineHeight: 22,
+                minimap: { enabled: true },
+                scrollBeyondLastLine: false,
+                wordWrap: "on",
+                automaticLayout: true,
+                tabSize: 4,
+                insertSpaces: true,
+                renderLineHighlight: "gutter",
+                cursorBlinking: "smooth",
+                cursorSmoothCaretAnimation: "on",
+                smoothScrolling: true,
+                padding: { top: 14, bottom: 14 },
+                suggest: { showKeywords: true, showSnippets: true },
+                quickSuggestions: { other: true, comments: false, strings: false },
+                bracketPairColorization: { enabled: true },
+                guides: { bracketPairs: true, indentation: true },
+                formatOnType: true,
+                formatOnPaste: true,
+                accessibilitySupport: "off",
+            });
+
+            // Ctrl+Enter to run
+            monacoInstance.addAction({
+                id: "run-code",
+                label: "Run Code",
+                keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
+                run: function () { executeCode(); }
+            });
+
+            // Live char/line count updates
+            monacoInstance.onDidChangeModelContent(function () {
+                updateEditorInfo();
+            });
+
+            // Initial count
+            updateEditorInfo();
+            monacoInstance.focus();
+        });
     }
 
     // --- Events ---
     function bindEvents() {
-        codeEditor.addEventListener("input", onEditorInput);
-        codeEditor.addEventListener("scroll", syncLineScroll);
-        codeEditor.addEventListener("keydown", onEditorKeydown);
         runBtn.addEventListener("click", executeCode);
         clearBtn.addEventListener("click", clearOutput);
         copyCodeBtn.addEventListener("click", copyCode);
@@ -137,14 +229,14 @@
             showToast("Code copied!", "success");
         });
         if (editGenBtn) editGenBtn.addEventListener("click", () => {
-            codeEditor.value = lastGeneratedCode;
-            onEditorInput();
+            editorAPI.setValue(lastGeneratedCode);
             switchMode("editor");
-            showToast("Code loaded into editor", "info");
+            // Small delay so Monaco is visible before focusing
+            setTimeout(() => editorAPI.focus(), 80);
+            showToast("Code loaded into editor — tweak it and hit Run!", "info");
         });
         if (runGenBtn) runGenBtn.addEventListener("click", () => {
-            codeEditor.value = lastGeneratedCode;
-            onEditorInput();
+            editorAPI.setValue(lastGeneratedCode);
             executeCode();
         });
     }
@@ -156,6 +248,8 @@
             modePrompt.classList.remove("active");
             editorPanel.style.display = "flex";
             promptPanel.style.display = "none";
+            // Let Monaco re-layout after becoming visible
+            if (monacoInstance) setTimeout(() => monacoInstance.layout(), 50);
         } else {
             modePrompt.classList.add("active");
             modeEditor.classList.remove("active");
@@ -164,36 +258,12 @@
         }
     }
 
-    // --- Editor ---
-    function onEditorInput() {
-        updateLineNumbers();
-        updateEditorInfo();
-    }
-
-    function updateLineNumbers() {
-        const lines = codeEditor.value.split("\n").length;
-        let nums = "";
-        for (let i = 1; i <= Math.max(lines, 20); i++) nums += i + "\n";
-        lineNumbers.textContent = nums;
-    }
-
-    function syncLineScroll() { lineNumbers.scrollTop = codeEditor.scrollTop; }
-
+    // --- Editor info (char/line count in footer) ---
     function updateEditorInfo() {
-        const text = codeEditor.value;
+        if (!monacoInstance) return;
+        const text = monacoInstance.getValue();
         charCount.textContent = text.length + " chars";
-        lineCount.textContent = text.split("\n").length + " lines";
-    }
-
-    function onEditorKeydown(e) {
-        if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); executeCode(); return; }
-        if (e.key === "Tab") {
-            e.preventDefault();
-            const s = codeEditor.selectionStart, end = codeEditor.selectionEnd;
-            codeEditor.value = codeEditor.value.substring(0, s) + "    " + codeEditor.value.substring(end);
-            codeEditor.selectionStart = codeEditor.selectionEnd = s + 4;
-            onEditorInput();
-        }
+        lineCount.textContent = monacoInstance.getModel().getLineCount() + " lines";
     }
 
     // --- Dataset Upload (Supabase-backed) ---
@@ -336,7 +406,7 @@
 
     // --- Code Execution ---
     async function executeCode() {
-        const code = codeEditor.value.trim();
+        const code = editorAPI.getValue().trim();
         if (!code) { showToast("Write some code first!", "info"); return; }
 
         const debug = debugToggle ? debugToggle.checked : false;
@@ -360,7 +430,7 @@
             addToHistory(result, code);
             updateStats(result);
         } catch (err) {
-            displayResult({ success: false, output: "", error: err.message, plots: [], output_files: [], execution_time_ms: 0 }, code);
+            displayResult({ success: false, output: "", error: err.message, plots: [], output_files: [], execution_time_ms: 0 }, editorAPI.getValue());
         } finally {
             setExecuting(false);
         }
@@ -546,7 +616,12 @@
             const item = document.createElement("div");
             item.className = "history-item";
             item.innerHTML = '<span class="dot ' + (entry.success ? "success" : "error") + '"></span><span class="label">' + escapeHTML(entry.label) + '</span><span class="time">' + entry.time + '</span>';
-            item.addEventListener("click", () => { codeEditor.value = entry.code; onEditorInput(); switchMode("editor"); showToast("Code restored", "info"); });
+            item.addEventListener("click", () => {
+                editorAPI.setValue(entry.code);
+                switchMode("editor");
+                setTimeout(() => editorAPI.focus(), 80);
+                showToast("Code restored", "info");
+            });
             historyList.appendChild(item);
         }
     }
@@ -582,9 +657,9 @@
         try {
             const res = await fetch("/api/examples/" + id);
             const data = await res.json();
-            codeEditor.value = data.code;
-            onEditorInput();
+            editorAPI.setValue(data.code);
             switchMode("editor");
+            setTimeout(() => editorAPI.focus(), 80);
             showToast("Example loaded — hit Run!", "info");
         } catch (err) { showToast("Failed to load example", "error"); }
     }
@@ -598,7 +673,7 @@
     }
 
     function copyCode() {
-        navigator.clipboard.writeText(codeEditor.value).then(() => showToast("Code copied!", "success"));
+        navigator.clipboard.writeText(editorAPI.getValue()).then(() => showToast("Code copied!", "success"));
     }
 
     function toggleSidebar() {

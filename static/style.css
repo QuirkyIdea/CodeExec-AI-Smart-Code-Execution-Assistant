@@ -151,12 +151,11 @@ body{font-family:var(--font-sans);background:var(--bg-primary);color:var(--text-
 .small-btn.accent:hover{background:rgba(245,158,11,0.1)}
 
 /* Editor */
-.editor-container{flex:1;display:flex;overflow:hidden;background:var(--bg-secondary);position:relative}
-.line-numbers{width:48px;padding:14px 8px 14px 0;text-align:right;font-family:var(--font-mono);font-size:12px;color:var(--text-muted);line-height:1.65;user-select:none;overflow:hidden;border-right:1px solid var(--border-subtle);background:rgba(17,17,19,0.4);flex-shrink:0}
-#codeEditor{flex:1;background:transparent;color:var(--text-primary);border:none;outline:none;resize:none;padding:14px 16px;font-family:var(--font-mono);font-size:13px;line-height:1.65;tab-size:4;-moz-tab-size:4;overflow-y:auto;white-space:pre}
-#codeEditor::placeholder{color:var(--text-muted);font-style:italic}
-#codeEditor::-webkit-scrollbar{width:6px}
-#codeEditor::-webkit-scrollbar-thumb{background:var(--text-muted);border-radius:3px}
+.editor-container{flex:1;display:flex;overflow:hidden;background:var(--bg-secondary);position:relative;min-height:0}
+#monacoEditor{width:100%;height:100%;}
+/* Legacy textarea rules kept for safety — unused after Monaco swap */
+.line-numbers{display:none}
+#codeEditor{display:none}
 
 .editor-footer{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-top:1px solid var(--border-subtle);background:rgba(17,17,19,0.5);flex-shrink:0}
 .editor-info{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);font-family:var(--font-mono)}
