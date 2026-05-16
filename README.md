@@ -6,7 +6,7 @@
 
 ## 🚀 What is CodeExec AI?
 
-CodeExec AI is an intelligent system that lets users **upload datasets, ask questions in plain English, and get instant results with explanations**.
+CodeExec AI is an intelligent system that lets users **upload datasets, ask questions in plain English, and get instant results with explanations**.It not only provides code but also gives a sandbox view of the visualized data
 
 It combines:
 
